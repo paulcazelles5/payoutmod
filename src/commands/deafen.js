@@ -22,7 +22,13 @@ module.exports = {
 
     try {
       await target.voice.setDeaf(true, `Par ${message.author.tag}`);
-      await message.reply({ embeds: [new EmbedBuilder().setColor(config.colors.warn).setDescription(`deaf **${target.user.tag}** assourdi.`)] });
+      await message.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setColor(config.colors.warn)
+            .setDescription(`🔇 **${target.user.tag}** a été assourdi.`),
+        ],
+      });
     } catch (err) {
       await message.reply(`❌ ${err.message}`);
     }
