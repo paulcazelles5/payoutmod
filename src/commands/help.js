@@ -3,47 +3,76 @@ const config = require('../config');
 
 module.exports = {
   name: 'help',
-  aliases: ['aide', 'commands'],
-  description: 'Liste des commandes de modération',
-  async execute(message) {
+  aliases: ['aide', 'commands', 'cmds'],
+  description: 'Liste des commandes',
+  async execute(message, args) {
+    const cat = (args[0] || '').toLowerCase();
+
+    const categories = {
+      mod: {
+        title: '🔨 Modération',
+        value: [
+          '`*ban` `*softban` `*tempban` `*hackban` `*unban`',
+          '`*kick` `*timeout` `*untimeout` `*mute` `*unmute`',
+          '`*warn` `*warnings` `*delwarn` `*clearwarns`',
+          '`*jail` `*unjail` `*jailsetup` `*jails`',
+          '`*note` `*notes` `*clearnotes`',
+          '`*purge` `*nuke` `*slowmode` `*lock` `*unlock`',
+          '`*nick` `*role` `*modlogs`',
+        ].join('\n'),
+      },
+      voice: {
+        title: '🔊 Vocal',
+        value: [
+          '`*vckick` `*vcmute` `*vcunmute`',
+          '`*deafen` `*undeafen` `*vcmove`',
+          '`*disconnect` `*vcmuteall` `*vcunmuteall`',
+        ].join('\n'),
+      },
+      util: {
+        title: '🛠️ Utilitaires',
+        value: [
+          '`*userinfo` `*serverinfo` `*roleinfo` `*channelinfo`',
+          '`*avatar` `*banner` `*roles` `*emojis`',
+          '`*membercount` `*ping` `*uptime` `*invite`',
+          '`*snipe` `*editsnipe` `*firstmessage`',
+          '`*poll` `*say` `*embed` `*announce`',
+        ].join('\n'),
+      },
+      staff: {
+        title: '⚙️ Staff / Serveur',
+        value: [
+          '`*createrole` `*deleterole` `*addrole` `*removerole`',
+          '`*createchannel` `*deletechannel`',
+          '`*setmodlog` `*steal` `*clone`',
+          '`*hide` `*unhide` `*topic`',
+        ].join('\n'),
+      },
+    };
+
+    if (cat && categories[cat]) {
+      const c = categories[cat];
+      const embed = new EmbedBuilder()
+        .setColor(config.colors.info)
+        .setTitle(c.title)
+        .setDescription(c.value)
+        .setFooter({ text: `Prefix : ${config.prefix}` });
+      return message.reply({ embeds: [embed] });
+    }
+
     const embed = new EmbedBuilder()
       .setColor(config.colors.info)
-      .setTitle('PayoutMod — Commandes')
-      .setDescription(`Prefix : \`${config.prefix}\``)
-      .addFields(
-        {
-          name: 'Modération',
-          value: [
-            '`*ban @user [raison] [jours]` — Bannir',
-            '`*unban <id> [raison]` — Débannir',
-            '`*kick @user [raison]` — Expulser',
-            '`*timeout @user <durée> [raison]` — Timeout (10m, 1h, 1d...)',
-            '`*untimeout @user [raison]` — Retirer timeout',
-            '`*mute / *unmute` — Alias timeout',
-            '`*warn @user [raison]` — Avertir',
-            '`*warnings @user` — Voir les warns',
-            '`*clearwarns @user` — Effacer les warns',
-          ].join('\n'),
-        },
-        {
-          name: 'Salon & Messages',
-          value: [
-            '`*purge <n> [@user]` — Supprimer des messages (1-100)',
-            '`*slowmode <secondes>` — Slowmode (0 = off)',
-            '`*lock [raison]` / `*unlock` — Verrouiller le salon',
-          ].join('\n'),
-        },
-        {
-          name: 'Utilitaires',
-          value: [
-            '`*nick @user [pseudo]` — Changer le pseudo',
-            '`*role add|remove @user @role` — Gérer un rôle',
-            '`*modlogs @user` — Historique',
-            '`*help` — Cette aide',
-          ].join('\n'),
-        }
+      .setTitle('PayoutMod — Bot de modération complet')
+      .setDescription(
+        `Prefix : \`${config.prefix}\`\n\nUtilise \`*help <catégorie>\` pour le détail.\nCatégories : \`mod\` · \`voice\` · \`util\` · \`staff\``
       )
-      .setFooter({ text: 'Place le rôle du bot au-dessus des membres à modérer' });
+      .addFields(
+        Object.values(categories).map((c) => ({
+          name: c.title,
+          value: c.value.length > 1024 ? c.value.slice(0, 1020) + '…' : c.value,
+        }))
+      )
+      .setFooter({ text: `${message.client.commands.size} commandes chargées` });
 
     await message.reply({ embeds: [embed] });
   },

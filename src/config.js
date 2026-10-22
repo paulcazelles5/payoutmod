@@ -6,12 +6,17 @@ module.exports = {
   ],
   // Bloquer les invitations discord.gg / discord.com/invite
   blockInvites: false,
-  // Anti-spam : max messages dans la fenêtre (ms)
+  // Anti-spam
   antiSpam: {
     enabled: true,
     maxMessages: 5,
     windowMs: 5000,
-    timeoutMs: 60_000, // 1 minute
+    timeoutMs: 60_000,
+  },
+  // Jail
+  jail: {
+    roleName: 'Jailed',
+    channelName: 'jail',
   },
   // Couleurs embeds
   colors: {
@@ -19,5 +24,7 @@ module.exports = {
     success: 0x57f287,
     warn: 0xfee75c,
     info: 0x5865f2,
+    jail: 0x95a5a6,
+    soft: 0xe67e22,
   },
 };

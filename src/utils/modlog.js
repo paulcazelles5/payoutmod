@@ -1,7 +1,7 @@
 const { EmbedBuilder } = require('discord.js');
 const config = require('../config');
 
-async function sendModLog(guild, { action, moderator, target, reason, extra }) {
+async function sendModLog(guild, { action, moderator, target, reason, extra, color }) {
   const channelId = process.env.MOD_LOG_CHANNEL_ID;
   let channel = null;
 
@@ -13,18 +13,28 @@ async function sendModLog(guild, { action, moderator, target, reason, extra }) {
     channel = guild.channels.cache.find(
       (c) =>
         c.isTextBased() &&
-        (c.name.includes('mod-log') || c.name.includes('modlog') || c.name.includes('logs-mod') || c.name === 'moderation')
+        (c.name.includes('mod-log') ||
+          c.name.includes('modlog') ||
+          c.name.includes('logs-mod') ||
+          c.name === 'moderation' ||
+          c.name === 'logs')
     );
   }
 
   if (!channel) return;
 
   const embed = new EmbedBuilder()
-    .setColor(config.colors.mod)
+    .setColor(color || config.colors.mod)
     .setTitle(`Modération — ${action}`)
     .addFields(
       { name: 'Modérateur', value: `${moderator} (\`${moderator.id}\`)`, inline: true },
-      { name: 'Cible', value: target ? `${target} (\`${target.id || target}\`)` : 'N/A', inline: true },
+      {
+        name: 'Cible',
+        value: target
+          ? `${typeof target === 'string' ? target : target} (\`${target.id || target}\`)`
+          : 'N/A',
+        inline: true,
+      },
       { name: 'Raison', value: reason || 'Aucune raison fournie' }
     )
     .setTimestamp();

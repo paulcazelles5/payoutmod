@@ -1,58 +1,55 @@
-const fs = require('fs');
-const path = require('path');
+const { readJSON, writeJSON } = require('./storage');
 
-const DATA_DIR = path.join(process.cwd(), 'data');
-const WARNS_FILE = path.join(DATA_DIR, 'warns.json');
-
-function ensureData() {
-  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
-  if (!fs.existsSync(WARNS_FILE)) fs.writeFileSync(WARNS_FILE, '{}');
+function load() {
+  return readJSON('warns.json', {});
 }
 
-function loadWarns() {
-  ensureData();
-  try {
-    return JSON.parse(fs.readFileSync(WARNS_FILE, 'utf8'));
-  } catch {
-    return {};
-  }
-}
-
-function saveWarns(data) {
-  ensureData();
-  fs.writeFileSync(WARNS_FILE, JSON.stringify(data, null, 2));
+function save(data) {
+  writeJSON('warns.json', data);
 }
 
 function addWarn(guildId, userId, moderatorId, reason) {
-  const data = loadWarns();
+  const data = load();
   if (!data[guildId]) data[guildId] = {};
   if (!data[guildId][userId]) data[guildId][userId] = [];
 
   const warn = {
-    id: Date.now().toString(36),
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
     moderatorId,
     reason: reason || 'Aucune raison fournie',
     timestamp: Date.now(),
   };
 
   data[guildId][userId].push(warn);
-  saveWarns(data);
+  save(data);
   return warn;
 }
 
 function getWarns(guildId, userId) {
-  const data = loadWarns();
+  const data = load();
   return data[guildId]?.[userId] || [];
 }
 
 function clearWarns(guildId, userId) {
-  const data = loadWarns();
+  const data = load();
   if (data[guildId]?.[userId]) {
     delete data[guildId][userId];
-    saveWarns(data);
+    save(data);
     return true;
   }
   return false;
 }
 
-module.exports = { addWarn, getWarns, clearWarns };
+function removeWarn(guildId, userId, warnId) {
+  const data = load();
+  const list = data[guildId]?.[userId];
+  if (!list) return false;
+  const idx = list.findIndex((w) => w.id === warnId);
+  if (idx === -1) return false;
+  list.splice(idx, 1);
+  if (!list.length) delete data[guildId][userId];
+  save(data);
+  return true;
+}
+
+module.exports = { addWarn, getWarns, clearWarns, removeWarn };
